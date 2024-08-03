@@ -13,6 +13,7 @@ import clipboard
 import time
 import pyautogui
 
+
 def get_day_dict(day: Day) -> dict:
     return {
         "Entrada": day.interval.start if day.day_type == "REGULAR" else day.day_type,
@@ -179,6 +180,18 @@ day_schedule = DaySchedule(cajeros_df, day)
 day_list = ["Lunes", "Martes", "Miércoles",
             "Jueves", "Viernes", "Sábado", "Domingo"]
 
+def escribirTxt(file_path, line):
+    """Escribe una línea en el archivo especificado."""
+    with open(file_path, 'w') as file:
+        file.write(line)
+
+def leerTxt(file_path):
+    """Lee y devuelve la única línea del archivo especificado."""
+    with open(file_path, 'r') as file:
+        return file.readline().strip()
+
+
+
 def countdown(seconds):
     while seconds > 0:
         time.sleep(1)
@@ -197,6 +210,7 @@ def main():
     global day_list
 
     while True:
+        pdf_path = leerTxt("horario.txt")
         clear()
         print_header(pdf_path, amount_self, day)
         print_menu()
@@ -217,6 +231,7 @@ def main():
             if check_path_exists(pdf_path):
                 cajeros_df = get_cajeros_df(pdf_path, amount_self)
                 input('Archivo cargado correctamente. Presione Enter para continuar...')
+                escribirTxt("./horario.txt", pdf_path)
             else:
                 print('El archivo no existe')
 
