@@ -315,6 +315,8 @@ def main():
             event_hours = sorted(list(event_hours))
             if len(event_hours) > 0:
                 all_events = []
+                print(f"------------------------  {day}  ------------------------")
+                all_events.append(f"------------------------  {day}  ------------------------")
                 for event_hour in event_hours:
                     entran_list = []
                     salen_list = []
