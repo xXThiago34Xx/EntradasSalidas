@@ -408,7 +408,7 @@ def main():
             clear()
             print("Inicio")
             countdown(5)
-            delay = 1
+            delay = 0.1
             week = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
             for iday in week:
                 #clear()
