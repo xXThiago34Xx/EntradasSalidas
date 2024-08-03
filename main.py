@@ -8,6 +8,8 @@ from utils.pdf_utils import scrap_pdf
 from utils.time_utils import strfdelta
 from datetime import timedelta, datetime
 import clipboard
+from tkinter import filedialog
+from tkinter import *
 
 
 def get_day_dict(day: Day) -> dict:
@@ -174,7 +176,6 @@ day_schedule = DaySchedule(cajeros_df, day)
 day_list = ["Lunes", "Martes", "Miércoles",
             "Jueves", "Viernes", "Sábado", "Domingo"]
 
-
 def main():
 
     global pdf_path
@@ -193,7 +194,9 @@ def main():
         if option == '1':
             clear()
             print_header(pdf_path, amount_self, day)
+            #Meter gui para abrir archivo
             pdf_path = input(f'Ingrese la ruta del archivo PDF [{pdf_path}]: ')
+            #pdf_path = filedialog.askopenfilename()
             if check_path_exists(pdf_path):
                 cajeros_df = get_cajeros_df(pdf_path, amount_self)
                 input('Archivo cargado correctamente. Presione Enter para continuar...')
