@@ -207,6 +207,12 @@ def main():
             print_header(pdf_path, amount_self, day)
             #Meter gui para abrir archivo
             pdf_path = input(f'Ingrese la ruta del archivo PDF [{pdf_path}]: ')
+
+            #Para arrastrar nomas el archivo
+            if pdf_path.startswith('"') and pdf_path.endswith('"'):
+                # Eliminar las comillas al inicio y al final
+                pdf_path = pdf_path[1:-1]
+
             #pdf_path = filedialog.askopenfilename()
             if check_path_exists(pdf_path):
                 cajeros_df = get_cajeros_df(pdf_path, amount_self)
