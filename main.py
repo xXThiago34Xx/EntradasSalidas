@@ -8,9 +8,10 @@ from utils.pdf_utils import scrap_pdf
 from utils.time_utils import strfdelta
 from datetime import timedelta, datetime
 import clipboard
-from tkinter import filedialog
-from tkinter import *
-
+#from tkinter import filedialog
+#from tkinter import *
+import time
+import pyautogui
 
 def get_day_dict(day: Day) -> dict:
     return {
@@ -154,7 +155,9 @@ def print_menu():
 7. Exportar Entradas y Salidas de la Semana a Excel
 8. Entradas-Salidas por día (Clipboard)
 9. Tools (Completar EAN)
-10. Salir
+10. Completar EAN 13 Producto de Peso
+11. Exportar a WhatsApp
+12. Salir
 ''')
 
 
@@ -175,6 +178,14 @@ day = "Martes"
 day_schedule = DaySchedule(cajeros_df, day)
 day_list = ["Lunes", "Martes", "Miércoles",
             "Jueves", "Viernes", "Sábado", "Domingo"]
+
+def countdown(seconds):
+    while seconds > 0:
+        time.sleep(1)
+        print(seconds)
+        seconds -= 1
+    print("¡Tiempo terminado!")
+
 
 def main():
 
@@ -394,6 +405,58 @@ def main():
             input("Presione cualquier tecla para continuar...")
 
         elif option == '11':
+            clear()
+            print("Inicio")
+            countdown(5)
+            delay = 1
+            week = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+            for iday in week:
+                #clear()
+                print_header(pdf_path, amount_self, iday)
+
+                event_hours = set()
+                for employee in pd.DataFrame(day_schedule.get_available_employees()).iterrows():
+                    event_hours.add(employee[1]["Entrada"])
+                    event_hours.add(employee[1]["Salida"])
+
+                event_hours = sorted(list(event_hours))
+                if len(event_hours) > 0:
+                    all_events = []
+                    print(f"------------------------  {iday}  ------------------------")
+                    all_events.append(f"------------------------  {iday}  ------------------------")
+                    for event_hour in event_hours:
+                        entran_list = []
+                        salen_list = []
+                        print(f"--------------------------{event_hour.strftime('%I:%M%p')}--------------------------")
+                        all_events.append(f"--------------------------{event_hour.strftime('%I:%M%p')}--------------------------")
+                        for employee in pd.DataFrame(day_schedule.get_available_employees()).iterrows():
+                            if employee[1]["Entrada"] == event_hour:
+                                entran_list.append(f"\t{employee[1]['Nombre']}")
+                        for employee in pd.DataFrame(day_schedule.get_available_employees()).iterrows():
+                            if employee[1]["Salida"] == event_hour:
+                                salen_list.append(f"\t{employee[1]['Nombre']}")
+                        if len(entran_list) > 0:
+                            print("Entradas:")
+                            all_events.append("Entradas:")
+                            for entran in entran_list:
+                                print(entran)
+                                all_events.append(entran)
+                        if len(salen_list) > 0:
+                            print("Salidas:")
+                            all_events.append("Salidas:")
+                            for salen in salen_list:
+                                print(salen)
+                                all_events.append(salen)
+                                
+                    clipboard.copy("\n".join(all_events))
+                    countdown(delay)
+                    pyautogui.hotkey('ctrl', 'v')
+                    countdown(delay)
+                    pyautogui.press('enter')
+                    countdown(delay)
+            input("Mensajes Enviados")
+
+        elif option == '12':
             break            
 
         else:
