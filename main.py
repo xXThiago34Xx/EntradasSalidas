@@ -149,8 +149,8 @@ def print_menu():
 4. Mostrar Entradas
 5. Mostrar Salidas
 6. Entradas-Salidas de la Semana
-7. Exportar a excel
-8. Entradas-Salidas por día Consola
+7. Exportar Entradas y Salidas de la Semana a Excel
+8. Entradas-Salidas por día (Clipboard)
 9. Tools (Completar EAN)
 10. Salir
 ''')
@@ -259,21 +259,49 @@ def main():
                 print(f"-------------------------------{_day}-------------------------------")
                 _day_schedule = DaySchedule(cajeros_df, _day)
                 _available_employees = _day_schedule.get_available_employees()
-                if (_available_employees.empty):
+                
+                if _available_employees.empty:
                     print("No hay empleados disponibles")
                 else:
                     try:
                         os.makedirs("Exportados")
-                    except:
+                    except FileExistsError:
                         pass
-                    _sorted_schedule = _available_employees.sort_values(by="Entrada")[["Nombre", "Entrada", "Salida"]]
-                    format_schedule(_sorted_schedule).to_excel(f"./Exportados/{_day}Entradas.xlsx", index=False)
-                    _sorted_schedule = _available_employees.sort_values(by="Salida")[["Nombre", "Salida", "Entrada"]]
-                    format_schedule(_sorted_schedule).to_excel(f"./Exportados/{_day}Salidas.xlsx", index=False)
+
+                    # Asegurar que las columnas 'Entrada' y 'Salida' sean de tipo datetime
+                    _available_employees["Entrada"] = pd.to_datetime(_available_employees["Entrada"])
+                    _available_employees["Salida"] = pd.to_datetime(_available_employees["Salida"])
+
+                    # Ordenar por entrada
+                    sorted_by_entry = _available_employees.sort_values(by="Entrada")[["Nombre", "Entrada", "Salida"]]
+                    sorted_by_entry.columns = ["Nombre_Entrada", "Entrada", "Salida"]
+
+                    # Convertir a texto para evitar "1/01/1900"
+                    sorted_by_entry["Entrada"] = sorted_by_entry["Entrada"].dt.strftime('%H:%M')
+                    sorted_by_entry["Salida"] = sorted_by_entry["Salida"].dt.strftime('%H:%M')
+
+                    # Ordenar por salida
+                    sorted_by_exit = _available_employees.sort_values(by="Salida")[["Nombre", "Salida", "Entrada"]]
+                    sorted_by_exit.columns = ["Nombre_Salida", "Salida", "Entrada"]
+
+                    # Convertir a texto para evitar "1/01/1900"
+                    sorted_by_exit["Salida"] = sorted_by_exit["Salida"].dt.strftime('%H:%M')
+                    sorted_by_exit["Entrada"] = sorted_by_exit["Entrada"].dt.strftime('%H:%M')
+
+                    # Crear un DataFrame combinado con las seis columnas
+                    combined_df = pd.concat([sorted_by_entry.reset_index(drop=True), sorted_by_exit.reset_index(drop=True)], axis=1)
+
+                    # Renombrar columnas para el archivo Excel
+                    combined_df.columns = ["Nombre", "Entrada", "Salida", "Nombre", "Salida", "Entrada"]
+
+                    # Exportar a un solo archivo Excel
+                    combined_df.to_excel(f"./Exportados/{_day}_EntradasSalidas.xlsx", index=False)
+                    
                     print("Exportado correctamente")
                 print("\n\n")
 
             input('Presione Enter para continuar...')
+
         
         elif option == '8':
             clear()
@@ -290,8 +318,8 @@ def main():
                 for event_hour in event_hours:
                     entran_list = []
                     salen_list = []
-                    print(f"-------------------------------{event_hour.strftime('%I:%M%p')}-------------------------------")
-                    all_events.append(f"-------------------------------{event_hour.strftime('%I:%M%p')}-------------------------------")
+                    print(f"--------------------------{event_hour.strftime('%I:%M%p')}--------------------------")
+                    all_events.append(f"--------------------------{event_hour.strftime('%I:%M%p')}--------------------------")
                     for employee in pd.DataFrame(day_schedule.get_available_employees()).iterrows():
                         if employee[1]["Entrada"] == event_hour:
                             entran_list.append(f"\t{employee[1]['Nombre']}")
